@@ -55,7 +55,10 @@ pub async fn from_file(file: &web_sys::File) -> String {
     
     let mut start = 0;
     let mut end = start + 8;
-    while end < bits_size {
+    if bits_size < end {
+        file.slice_with_i32_and_f64(start, file.size()).unwrap();
+    }
+    while end <= bits_size {
         let blob = match end > file.size() as i32 {
             true => {
                 file.slice_with_i32_and_f64(start, file.size()).unwrap()
