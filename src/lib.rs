@@ -45,7 +45,33 @@ impl MD5 {
     
     pub fn finalize(&mut self) {
         self.builder.update(self.buffer.clone(), true);
-    }
+    }    
+}
+
+#[wasm_bindgen]
+pub async fn from_file(file: &web_sys::File) -> String {
+    let mut md5 = MD5::new();
+    let bits_size = 8 * file.size().ceil() as i32;
+    
+    let mut start = 0;
+    let mut end = start + 8;
+    while end < bits_size {
+        let blob = match end > file.size() as i32 {
+            true => {
+                file.slice_with_i32_and_f64(start, file.size()).unwrap()
+            },
+            false => {
+                file.slice_with_i32_and_i32(start, end).unwrap()
+            },
+        };
+        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer()).await.unwrap();
+        let byte_array = js_sys::Uint8Array::new(&array_buffer);
+        md5.update(byte_array.to_vec().as_slice());
+        start = end;
+        end = end + 8;
+    };
+    md5.finalize();
+    md5.digest()
 }
 
 #[cfg(test)]
