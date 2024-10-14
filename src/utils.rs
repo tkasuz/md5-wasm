@@ -1,9 +1,17 @@
 use std::convert::TryInto;
 
-const fn F(x: u32, y: u32, z: u32) -> u32 { x & y | !x & z }
-const fn G(x: u32, y: u32, z: u32) -> u32 { x & z | y & !z }
-const fn H(x: u32, y: u32, z: u32) -> u32 { x ^ y ^ z }
-const fn I(x: u32, y: u32, z: u32) -> u32 { y ^ (x | !z) }
+const fn F(x: u32, y: u32, z: u32) -> u32 {
+    x & y | !x & z
+}
+const fn G(x: u32, y: u32, z: u32) -> u32 {
+    x & z | y & !z
+}
+const fn H(x: u32, y: u32, z: u32) -> u32 {
+    x ^ y ^ z
+}
+const fn I(x: u32, y: u32, z: u32) -> u32 {
+    y ^ (x | !z)
+}
 
 const T: [u32; 65] = [
     0x00000000, 0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613,
@@ -17,7 +25,6 @@ const T: [u32; 65] = [
     0xeb86d391,
 ];
 
-
 #[derive(Clone, Copy)]
 pub struct Buffer {
     a: u32,
@@ -27,9 +34,15 @@ pub struct Buffer {
 }
 
 impl Buffer {
-   fn to_string(self) -> String {
-    format!("{:08x}{:08x}{:08x}{:08x}", self.a.swap_bytes(), self.b.swap_bytes(), self.c.swap_bytes(), self.d.swap_bytes())
-   }
+    fn to_string(self) -> String {
+        format!(
+            "{:08x}{:08x}{:08x}{:08x}",
+            self.a.swap_bytes(),
+            self.b.swap_bytes(),
+            self.c.swap_bytes(),
+            self.d.swap_bytes()
+        )
+    }
 }
 
 pub struct MD5Builder {
@@ -38,9 +51,8 @@ pub struct MD5Builder {
     pub digest: Option<String>,
 }
 
-
 impl MD5Builder {
-    fn padding(&self, value: &mut Vec<u8>)  {
+    fn padding(&self, value: &mut Vec<u8>) {
         // Step 1: Append Padding Bits
         value.push(0b10000000); // Append "1" bit
         while (value.len() * 8) % 512 != 448 {
@@ -64,7 +76,9 @@ impl MD5Builder {
     }
 
     pub fn update(&mut self, mut value: Vec<u8>, padding: bool) {
-        self.total_length = self.total_length.wrapping_add(value.len().saturating_mul(8) as u64);
+        self.total_length = self
+            .total_length
+            .wrapping_add(value.len().saturating_mul(8) as u64);
         if padding {
             self.padding(&mut value);
         }
@@ -81,10 +95,11 @@ impl MD5Builder {
 
             let round1 = |a: &mut u32, b: u32, c: u32, d: u32, k: usize, s: u32, i: usize| {
                 *a = b.wrapping_add(
-                        (*a).wrapping_add(F(b, c, d))
-                            .wrapping_add(x[k])
-                            .wrapping_add(T[i]).rotate_left(s),
-                    )
+                    (*a).wrapping_add(F(b, c, d))
+                        .wrapping_add(x[k])
+                        .wrapping_add(T[i])
+                        .rotate_left(s),
+                )
             };
 
             // Perform Round 1 operations
@@ -110,12 +125,12 @@ impl MD5Builder {
 
             // Closure for Round 2 operations
             let round2 = |a: &mut u32, b: u32, c: u32, d: u32, k: usize, s: u32, i: usize| {
-                *a = b
-                    .wrapping_add(
-                        (*a).wrapping_add(G(b, c, d))
-                            .wrapping_add(x[k])
-                            .wrapping_add(T[i]).rotate_left(s),
-                    )
+                *a = b.wrapping_add(
+                    (*a).wrapping_add(G(b, c, d))
+                        .wrapping_add(x[k])
+                        .wrapping_add(T[i])
+                        .rotate_left(s),
+                )
             };
 
             // Perform Round 2 operations
@@ -138,12 +153,12 @@ impl MD5Builder {
 
             // Closure for Round 3 operations
             let round3 = |a: &mut u32, b: u32, c: u32, d: u32, k: usize, s: u32, i: usize| {
-                *a = b
-                    .wrapping_add(
-                        (*a).wrapping_add(H(b, c, d))
-                            .wrapping_add(x[k])
-                            .wrapping_add(T[i]).rotate_left(s),
-                    )
+                *a = b.wrapping_add(
+                    (*a).wrapping_add(H(b, c, d))
+                        .wrapping_add(x[k])
+                        .wrapping_add(T[i])
+                        .rotate_left(s),
+                )
             };
 
             // Perform Round 3 operations
@@ -166,12 +181,12 @@ impl MD5Builder {
 
             // Closure for Round 4 operations
             let round4 = |a: &mut u32, b: u32, c: u32, d: u32, k: usize, s: u32, i: usize| {
-                *a = b
-                    .wrapping_add(
-                        (*a).wrapping_add(I(b, c, d))
-                            .wrapping_add(x[k])
-                            .wrapping_add(T[i]).rotate_left(s),
-                    )
+                *a = b.wrapping_add(
+                    (*a).wrapping_add(I(b, c, d))
+                        .wrapping_add(x[k])
+                        .wrapping_add(T[i])
+                        .rotate_left(s),
+                )
             };
 
             round4(&mut a, b, c, d, 0, 6, 49);
@@ -200,16 +215,15 @@ impl MD5Builder {
         self.state.b = b;
         self.state.c = c;
         self.state.d = d;
-        
+
         if padding {
             self.digest = Some(self.state.to_string());
         }
-        
     }
-    
+
     pub fn new() -> Self {
         Self {
-            state: Buffer{
+            state: Buffer {
                 a: u32::from_le_bytes([0x01, 0x23, 0x45, 0x67]),
                 b: u32::from_le_bytes([0x89, 0xab, 0xcd, 0xef]),
                 c: u32::from_le_bytes([0xfe, 0xdc, 0xba, 0x98]),
@@ -233,7 +247,7 @@ mod tests {
                 builder.update(value.as_bytes().to_vec(), true);
                 return builder.state.to_string();
             }
-            for block in value.as_bytes().to_vec().chunks(64){
+            for block in value.as_bytes().to_vec().chunks(64) {
                 match block.len() == 64 {
                     true => {
                         builder.update(block.to_vec(), false);
@@ -249,8 +263,17 @@ mod tests {
         assert!(hash_from_string("a") == "0cc175b9c0f1b6a831c399e269772661");
         assert!(hash_from_string("abc") == "900150983cd24fb0d6963f7d28e17f72");
         assert!(hash_from_string("message digest") == "f96b697d7cb7938d525a2f31aaf161d0");
-        assert!(hash_from_string("abcdefghijklmnopqrstuvwxyz") == "c3fcd3d76192e4007dfb496cca67e13b");
-        assert!(hash_from_string("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") == "d174ab98d277d9f5a5611c2c9f419d9f");
-        assert!(hash_from_string("12345678901234567890123456789012345678901234567890123456789012345678901234567890") == "57edf4a22be3c955ac49da2e2107b67a");
+        assert!(
+            hash_from_string("abcdefghijklmnopqrstuvwxyz") == "c3fcd3d76192e4007dfb496cca67e13b"
+        );
+        assert!(
+            hash_from_string("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+                == "d174ab98d277d9f5a5611c2c9f419d9f"
+        );
+        assert!(
+            hash_from_string(
+                "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
+            ) == "57edf4a22be3c955ac49da2e2107b67a"
+        );
     }
 }

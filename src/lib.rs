@@ -8,9 +8,8 @@ extern "C" {
     fn alert(s: &str);
 }
 
-
 #[wasm_bindgen]
-pub struct MD5  {
+pub struct MD5 {
     buffer: Box<Vec<u8>>,
     builder: MD5Builder,
 }
@@ -19,13 +18,16 @@ pub struct MD5  {
 impl MD5 {
     #[wasm_bindgen(constructor)]
     pub fn new() -> MD5 {
-        MD5 { buffer: Box::from(Vec::new()), builder: MD5Builder::new() }
+        MD5 {
+            buffer: Box::from(Vec::new()),
+            builder: MD5Builder::new(),
+        }
     }
 
     pub fn digest(&self) -> Option<String> {
         self.builder.digest.clone()
     }
-    
+
     fn buffer_size(&self) -> usize {
         self.buffer.len()
     }
@@ -37,39 +39,43 @@ impl MD5 {
         }
         let mut chunks = self.buffer.chunks_exact(64);
         for chunk in &mut chunks {
-            self.builder.update(chunk.to_vec(), false); 
+            self.builder.update(chunk.to_vec(), false);
         }
         let last_block = chunks.remainder().to_vec();
         self.buffer.clear();
         self.buffer.extend_from_slice(&last_block);
     }
-    
+
     pub fn finalize(&mut self) {
         self.builder.update(self.buffer.to_vec(), true);
-    }    
+    }
 }
 
 #[wasm_bindgen]
 pub async fn md5_from_file(file: &web_sys::File) -> String {
     const CHUNK_SIZE: f64 = 100.0 * 1024.0 * 1024.0; // 100MB
     let mut md5 = MD5::new();
-    
+
     // If the file is smaller than the chunk size, we can read it all at once
     if file.size() < CHUNK_SIZE {
         let blob = file.slice_with_f64_and_f64(0.0, file.size()).unwrap();
-        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer()).await.unwrap();
+        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer())
+            .await
+            .unwrap();
         let byte_array = js_sys::Uint8Array::new(&array_buffer);
         md5.update(byte_array.to_vec().as_slice());
         md5.finalize();
         return md5.digest().unwrap();
-    }  
-    
+    }
+
     // Otherwise, we need to read the file in chunks
     let mut start = f64::from(0);
     while start < file.size() {
         let end = (start + CHUNK_SIZE).min(file.size());
         let blob = file.slice_with_f64_and_f64(start, end).unwrap();
-        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer()).await.unwrap();
+        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer())
+            .await
+            .unwrap();
         let byte_array = js_sys::Uint8Array::new(&array_buffer);
         md5.update(byte_array.to_vec().as_slice());
         start = end;
@@ -123,7 +129,7 @@ mod tests {
         md5.update("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes());
         md5.finalize();
         assert!(md5.digest() == Some("d174ab98d277d9f5a5611c2c9f419d9f".to_string()));
-        
+
         let mut md5 = MD5::new();
         md5.update("ABCDEFGHIJKLMNOPQRSTUVWXYZ".as_bytes());
         md5.update("abcdefghijklmnopqrstuvwxyz0123456789".as_bytes());
@@ -133,7 +139,10 @@ mod tests {
     #[test]
     fn long_string2() {
         let mut md5 = MD5::new();
-        md5.update("12345678901234567890123456789012345678901234567890123456789012345678901234567890".as_bytes());
+        md5.update(
+            "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
+                .as_bytes(),
+        );
         md5.finalize();
         assert!(md5.digest() == Some("57edf4a22be3c955ac49da2e2107b67a".to_string()));
 
