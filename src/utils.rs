@@ -1,31 +1,5 @@
-use std::convert::TryInto;
+use std::{convert::TryInto, fmt};
 
-const fn F(x: u32, y: u32, z: u32) -> u32 {
-    x & y | !x & z
-}
-const fn G(x: u32, y: u32, z: u32) -> u32 {
-    x & z | y & !z
-}
-const fn H(x: u32, y: u32, z: u32) -> u32 {
-    x ^ y ^ z
-}
-const fn I(x: u32, y: u32, z: u32) -> u32 {
-    y ^ (x | !z)
-}
-
-const T: [u32; 65] = [
-    0x00000000, 0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613,
-    0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e,
-    0x49b40821, 0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681,
-    0xe7d3fbc8, 0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8, 0x676f02d9,
-    0x8d2a4c8a, 0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60,
-    0xbebfbc70, 0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8,
-    0xc4ac5665, 0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d,
-    0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb,
-    0xeb86d391,
-];
-
-#[derive(Clone, Copy)]
 pub struct Buffer {
     a: u32,
     b: u32,
@@ -33,9 +7,10 @@ pub struct Buffer {
     d: u32,
 }
 
-impl Buffer {
-    fn to_string(self) -> String {
-        format!(
+impl fmt::Display for Buffer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
             "{:08x}{:08x}{:08x}{:08x}",
             self.a.swap_bytes(),
             self.b.swap_bytes(),
@@ -93,118 +68,118 @@ impl MD5Builder {
             // Save initial values of A, B, C, D
             let (aa, bb, cc, dd) = (a, b, c, d);
 
-            let round1 = |a: &mut u32, b: u32, c: u32, d: u32, k: usize, s: u32, i: usize| {
+            let round1 = |a: &mut u32, b: u32, c: u32, d: u32, x: u32, s: u32, t: u32| {
                 *a = b.wrapping_add(
-                    (*a).wrapping_add(F(b, c, d))
-                        .wrapping_add(x[k])
-                        .wrapping_add(T[i])
+                    (*a).wrapping_add(b & c | !b & d)
+                        .wrapping_add(x)
+                        .wrapping_add(t)
                         .rotate_left(s),
                 )
             };
 
             // Perform Round 1 operations
-            round1(&mut a, b, c, d, 0, 7, 1);
-            round1(&mut d, a, b, c, 1, 12, 2);
-            round1(&mut c, d, a, b, 2, 17, 3);
-            round1(&mut b, c, d, a, 3, 22, 4);
+            round1(&mut a, b, c, d, x[0], 7, 0xd76aa478);
+            round1(&mut d, a, b, c, x[1], 12, 0xe8c7b756);
+            round1(&mut c, d, a, b, x[2], 17, 0x242070db);
+            round1(&mut b, c, d, a, x[3], 22, 0xc1bdceee);
 
-            round1(&mut a, b, c, d, 4, 7, 5);
-            round1(&mut d, a, b, c, 5, 12, 6);
-            round1(&mut c, d, a, b, 6, 17, 7);
-            round1(&mut b, c, d, a, 7, 22, 8);
+            round1(&mut a, b, c, d, x[4], 7, 0xf57c0faf);
+            round1(&mut d, a, b, c, x[5], 12, 0x4787c62a);
+            round1(&mut c, d, a, b, x[6], 17, 0xa8304613);
+            round1(&mut b, c, d, a, x[7], 22, 0xfd469501);
 
-            round1(&mut a, b, c, d, 8, 7, 9);
-            round1(&mut d, a, b, c, 9, 12, 10);
-            round1(&mut c, d, a, b, 10, 17, 11);
-            round1(&mut b, c, d, a, 11, 22, 12);
+            round1(&mut a, b, c, d, x[8], 7, 0x698098d8);
+            round1(&mut d, a, b, c, x[9], 12, 0x8b44f7af);
+            round1(&mut c, d, a, b, x[10], 17, 0xffff5bb1);
+            round1(&mut b, c, d, a, x[11], 22, 0x895cd7be);
 
-            round1(&mut a, b, c, d, 12, 7, 13);
-            round1(&mut d, a, b, c, 13, 12, 14);
-            round1(&mut c, d, a, b, 14, 17, 15);
-            round1(&mut b, c, d, a, 15, 22, 16);
+            round1(&mut a, b, c, d, x[12], 7, 0x6b901122);
+            round1(&mut d, a, b, c, x[13], 12, 0xfd987193);
+            round1(&mut c, d, a, b, x[14], 17, 0xa679438e);
+            round1(&mut b, c, d, a, x[15], 22, 0x49b40821);
 
             // Closure for Round 2 operations
-            let round2 = |a: &mut u32, b: u32, c: u32, d: u32, k: usize, s: u32, i: usize| {
+            let round2 = |a: &mut u32, b: u32, c: u32, d: u32, x: u32, s: u32, t: u32| {
                 *a = b.wrapping_add(
-                    (*a).wrapping_add(G(b, c, d))
-                        .wrapping_add(x[k])
-                        .wrapping_add(T[i])
+                    (*a).wrapping_add(b & d | c & !d)
+                        .wrapping_add(x)
+                        .wrapping_add(t)
                         .rotate_left(s),
                 )
             };
 
             // Perform Round 2 operations
-            round2(&mut a, b, c, d, 1, 5, 17);
-            round2(&mut d, a, b, c, 6, 9, 18);
-            round2(&mut c, d, a, b, 11, 14, 19);
-            round2(&mut b, c, d, a, 0, 20, 20);
-            round2(&mut a, b, c, d, 5, 5, 21);
-            round2(&mut d, a, b, c, 10, 9, 22);
-            round2(&mut c, d, a, b, 15, 14, 23);
-            round2(&mut b, c, d, a, 4, 20, 24);
-            round2(&mut a, b, c, d, 9, 5, 25);
-            round2(&mut d, a, b, c, 14, 9, 26);
-            round2(&mut c, d, a, b, 3, 14, 27);
-            round2(&mut b, c, d, a, 8, 20, 28);
-            round2(&mut a, b, c, d, 13, 5, 29);
-            round2(&mut d, a, b, c, 2, 9, 30);
-            round2(&mut c, d, a, b, 7, 14, 31);
-            round2(&mut b, c, d, a, 12, 20, 32);
+            round2(&mut a, b, c, d, x[1], 5, 0xf61e2562);
+            round2(&mut d, a, b, c, x[6], 9, 0xc040b340);
+            round2(&mut c, d, a, b, x[11], 14, 0x265e5a51);
+            round2(&mut b, c, d, a, x[0], 20, 0xe9b6c7aa);
+            round2(&mut a, b, c, d, x[5], 5, 0xd62f105d);
+            round2(&mut d, a, b, c, x[10], 9, 0x02441453);
+            round2(&mut c, d, a, b, x[15], 14, 0xd8a1e681);
+            round2(&mut b, c, d, a, x[4], 20, 0xe7d3fbc8);
+            round2(&mut a, b, c, d, x[9], 5, 0x21e1cde6);
+            round2(&mut d, a, b, c, x[14], 9, 0xc33707d6);
+            round2(&mut c, d, a, b, x[3], 14, 0xf4d50d87);
+            round2(&mut b, c, d, a, x[8], 20, 0x455a14ed);
+            round2(&mut a, b, c, d, x[13], 5, 0xa9e3e905);
+            round2(&mut d, a, b, c, x[2], 9, 0xfcefa3f8);
+            round2(&mut c, d, a, b, x[7], 14, 0x676f02d9);
+            round2(&mut b, c, d, a, x[12], 20, 0x8d2a4c8a);
 
             // Closure for Round 3 operations
-            let round3 = |a: &mut u32, b: u32, c: u32, d: u32, k: usize, s: u32, i: usize| {
+            let round3 = |a: &mut u32, b: u32, c: u32, d: u32, x: u32, s: u32, t: u32| {
                 *a = b.wrapping_add(
-                    (*a).wrapping_add(H(b, c, d))
-                        .wrapping_add(x[k])
-                        .wrapping_add(T[i])
+                    (*a).wrapping_add(b ^ c ^ d)
+                        .wrapping_add(x)
+                        .wrapping_add(t)
                         .rotate_left(s),
                 )
             };
 
             // Perform Round 3 operations
-            round3(&mut a, b, c, d, 5, 4, 33);
-            round3(&mut d, a, b, c, 8, 11, 34);
-            round3(&mut c, d, a, b, 11, 16, 35);
-            round3(&mut b, c, d, a, 14, 23, 36);
-            round3(&mut a, b, c, d, 1, 4, 37);
-            round3(&mut d, a, b, c, 4, 11, 38);
-            round3(&mut c, d, a, b, 7, 16, 39);
-            round3(&mut b, c, d, a, 10, 23, 40);
-            round3(&mut a, b, c, d, 13, 4, 41);
-            round3(&mut d, a, b, c, 0, 11, 42);
-            round3(&mut c, d, a, b, 3, 16, 43);
-            round3(&mut b, c, d, a, 6, 23, 44);
-            round3(&mut a, b, c, d, 9, 4, 45);
-            round3(&mut d, a, b, c, 12, 11, 46);
-            round3(&mut c, d, a, b, 15, 16, 47);
-            round3(&mut b, c, d, a, 2, 23, 48);
+            round3(&mut a, b, c, d, x[5], 4, 0xfffa3942);
+            round3(&mut d, a, b, c, x[8], 11, 0x8771f681);
+            round3(&mut c, d, a, b, x[11], 16, 0x6d9d6122);
+            round3(&mut b, c, d, a, x[14], 23, 0xfde5380c);
+            round3(&mut a, b, c, d, x[1], 4, 0xa4beea44);
+            round3(&mut d, a, b, c, x[4], 11, 0x4bdecfa9);
+            round3(&mut c, d, a, b, x[7], 16, 0xf6bb4b60);
+            round3(&mut b, c, d, a, x[10], 23, 0xbebfbc70);
+            round3(&mut a, b, c, d, x[13], 4, 0x289b7ec6);
+            round3(&mut d, a, b, c, x[0], 11, 0xeaa127fa);
+            round3(&mut c, d, a, b, x[3], 16, 0xd4ef3085);
+            round3(&mut b, c, d, a, x[6], 23, 0x04881d05);
+            round3(&mut a, b, c, d, x[9], 4, 0xd9d4d039);
+            round3(&mut d, a, b, c, x[12], 11, 0xe6db99e5);
+            round3(&mut c, d, a, b, x[15], 16, 0x1fa27cf8);
+            round3(&mut b, c, d, a, x[2], 23, 0xc4ac5665);
 
             // Closure for Round 4 operations
-            let round4 = |a: &mut u32, b: u32, c: u32, d: u32, k: usize, s: u32, i: usize| {
+            let round4 = |a: &mut u32, b: u32, c: u32, d: u32, x: u32, s: u32, t: u32| {
                 *a = b.wrapping_add(
-                    (*a).wrapping_add(I(b, c, d))
-                        .wrapping_add(x[k])
-                        .wrapping_add(T[i])
+                    (*a).wrapping_add(c ^ (b | !d))
+                        .wrapping_add(x)
+                        .wrapping_add(t)
                         .rotate_left(s),
                 )
             };
 
-            round4(&mut a, b, c, d, 0, 6, 49);
-            round4(&mut d, a, b, c, 7, 10, 50);
-            round4(&mut c, d, a, b, 14, 15, 51);
-            round4(&mut b, c, d, a, 5, 21, 52);
-            round4(&mut a, b, c, d, 12, 6, 53);
-            round4(&mut d, a, b, c, 3, 10, 54);
-            round4(&mut c, d, a, b, 10, 15, 55);
-            round4(&mut b, c, d, a, 1, 21, 56);
-            round4(&mut a, b, c, d, 8, 6, 57);
-            round4(&mut d, a, b, c, 15, 10, 58);
-            round4(&mut c, d, a, b, 6, 15, 59);
-            round4(&mut b, c, d, a, 13, 21, 60);
-            round4(&mut a, b, c, d, 4, 6, 61);
-            round4(&mut d, a, b, c, 11, 10, 62);
-            round4(&mut c, d, a, b, 2, 15, 63);
-            round4(&mut b, c, d, a, 9, 21, 64);
+            round4(&mut a, b, c, d, x[0], 6, 0xf4292244);
+            round4(&mut d, a, b, c, x[7], 10, 0x432aff97);
+            round4(&mut c, d, a, b, x[14], 15, 0xab9423a7);
+            round4(&mut b, c, d, a, x[5], 21, 0xfc93a039);
+            round4(&mut a, b, c, d, x[12], 6, 0x655b59c3);
+            round4(&mut d, a, b, c, x[3], 10, 0x8f0ccc92);
+            round4(&mut c, d, a, b, x[10], 15, 0xffeff47d);
+            round4(&mut b, c, d, a, x[1], 21, 0x85845dd1);
+            round4(&mut a, b, c, d, x[8], 6, 0x6fa87e4f);
+            round4(&mut d, a, b, c, x[15], 10, 0xfe2ce6e0);
+            round4(&mut c, d, a, b, x[6], 15, 0xa3014314);
+            round4(&mut b, c, d, a, x[13], 21, 0x4e0811a1);
+            round4(&mut a, b, c, d, x[4], 6, 0xf7537e82);
+            round4(&mut d, a, b, c, x[11], 10, 0xbd3af235);
+            round4(&mut c, d, a, b, x[2], 15, 0x2ad7d2bb);
+            round4(&mut b, c, d, a, x[9], 21, 0xeb86d391);
 
             a = a.wrapping_add(aa);
             b = b.wrapping_add(bb);
@@ -243,7 +218,7 @@ mod tests {
     fn success() {
         fn hash_from_string(value: &str) -> String {
             let mut builder = MD5Builder::new();
-            if value.len() == 0 {
+            if value.is_empty() {
                 builder.update(value.as_bytes().to_vec(), true);
                 return builder.state.to_string();
             }

@@ -4,14 +4,15 @@ use utils::MD5Builder;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
+pub struct MD5 {
+    buffer: Vec<u8>,
+    builder: MD5Builder,
 }
 
-#[wasm_bindgen]
-pub struct MD5 {
-    buffer: Box<Vec<u8>>,
-    builder: MD5Builder,
+impl Default for MD5 {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[wasm_bindgen]
@@ -19,7 +20,7 @@ impl MD5 {
     #[wasm_bindgen(constructor)]
     pub fn new() -> MD5 {
         MD5 {
-            buffer: Box::from(Vec::new()),
+            buffer: Vec::new(),
             builder: MD5Builder::new(),
         }
     }
