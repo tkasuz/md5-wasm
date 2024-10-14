@@ -27,20 +27,20 @@ pub struct Buffer {
 }
 
 impl Buffer {
-   pub fn to_string(self) -> String {
+   fn to_string(self) -> String {
     format!("{:08x}{:08x}{:08x}{:08x}", self.a.swap_bytes(), self.b.swap_bytes(), self.c.swap_bytes(), self.d.swap_bytes())
    }
 }
 
-#[derive(Clone, Copy)]
 pub struct MD5Builder {
     pub state: Buffer,
     total_length: u64,
+    pub digest: Option<String>,
 }
 
 
 impl MD5Builder {
-    fn padding(self, mut value: Vec<u8>) -> Vec<u8>  {
+    fn padding(&self, value: &mut Vec<u8>)  {
         // Step 1: Append Padding Bits
         value.push(0b10000000); // Append "1" bit
         while (value.len() * 8) % 512 != 448 {
@@ -61,13 +61,12 @@ impl MD5Builder {
             (self.total_length >> 48) as u8,
             (self.total_length >> 56) as u8,
         ]);
-        value
     }
 
     pub fn update(&mut self, mut value: Vec<u8>, padding: bool) {
         self.total_length = self.total_length.wrapping_add(value.len().saturating_mul(8) as u64);
         if padding {
-            value = self.padding(value);
+            self.padding(&mut value);
         }
 
         let (mut a, mut b, mut c, mut d) = (self.state.a, self.state.b, self.state.c, self.state.d);
@@ -201,6 +200,11 @@ impl MD5Builder {
         self.state.b = b;
         self.state.c = c;
         self.state.d = d;
+        
+        if padding {
+            self.digest = Some(self.state.to_string());
+        }
+        
     }
     
     pub fn new() -> Self {
@@ -212,6 +216,7 @@ impl MD5Builder {
                 d: u32::from_le_bytes([0x76, 0x54, 0x32, 0x10]),
             },
             total_length: 0,
+            digest: None,
         }
     }
 }
