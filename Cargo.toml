@@ -1,8 +1,12 @@
 [package]
-name = "md5_wasm"
+name = "md5gen-wasm"
 version = "0.1.0"
 authors = ["tkasuz <tkasuz.dev@gmail.com>"]
-edition = "2018"
+edition = "2021"
+description = "`md5gen-wasm` is a WebAssembly (Wasm) library for generating MD5 hashes. This project leverages Rust and Wasm to provide a fast and efficient way to compute MD5 hashes directly in the browser or other Wasm-supported environments 🦀"
+keywords = ["wasm", "md5", "rust", "file"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tkasuz/md5-wasm"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -13,10 +17,6 @@ default = ["console_error_panic_hook"]
 [dependencies]
 wasm-bindgen = "0.2.84"
 
-# The `console_error_panic_hook` crate provides better debugging of panics by
-# logging them with `console.error`. This is great for development, but requires
-# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
-# code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
 js-sys = "0.3.71"
 wasm-bindgen-futures = "0.4.44"

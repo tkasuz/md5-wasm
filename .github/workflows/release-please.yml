@@ -1,0 +1,38 @@
+
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+  pull-requests: write
+name: release-please
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          release-type: node
+          token: ${{ steps.app-token.outputs.token }}
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+        if: ${{ steps.release.outputs.release_created }}
+      - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        if: ${{ steps.release.outputs.release_created }}
+      - run: wasm-pack build --target bundler
+        if: ${{ steps.release.outputs.release_created }}
+      - run: wasm-pack publish
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
