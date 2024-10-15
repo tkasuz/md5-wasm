@@ -48,19 +48,19 @@ impl MD5 {
     }
 
     pub fn finalize(&mut self) {
-        self.builder.update(self.buffer.to_vec(), true);
+        if self.digest().is_none() {
+            self.builder.update(self.buffer.to_vec(), true);
+        }
     }
 }
-
-impl From<js_sys::JsString> for MD5 {
-   fn from(val: js_sys::JsString) -> MD5 {
-       let mut md5 = MD5::new();
-       md5.update(val.as_string().unwrap().as_bytes());
-       md5.finalize();
-       md5
-   }
-}
     
+#[wasm_bindgen]
+pub fn md5_from_string(val: js_sys::JsString) -> String {
+    let mut md5 = MD5::new();
+    md5.update(val.as_string().unwrap().as_bytes());
+    md5.finalize();
+    md5.digest().unwrap()
+}
 
 #[wasm_bindgen]
 pub async fn md5_from_file(file: &web_sys::File) -> String {
