@@ -4,7 +4,7 @@
 
 extern crate wasm_bindgen_test;
 use js_sys::Uint8Array;
-use md5gen_wasm::md5_from_file;
+use md5gen_wasm::{md5_from_file, MD5};
 use wasm_bindgen_test::*;
 use web_sys::File;
 
@@ -87,4 +87,10 @@ async fn from_file_long_string2() {
     .unwrap();
     let result = md5_from_file(&file).await;
     assert_eq!(result, "57edf4a22be3c955ac49da2e2107b67a");
+}
+
+#[wasm_bindgen_test]
+fn from_string() {
+   let md5: MD5 = MD5::from(js_sys::JsString::from("message digest"));
+    assert!(md5.digest() == Some("f96b697d7cb7938d525a2f31aaf161d0".to_string()));
 }

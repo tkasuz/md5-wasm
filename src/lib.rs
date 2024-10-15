@@ -52,6 +52,16 @@ impl MD5 {
     }
 }
 
+impl From<js_sys::JsString> for MD5 {
+   fn from(val: js_sys::JsString) -> MD5 {
+       let mut md5 = MD5::new();
+       md5.update(val.as_string().unwrap().as_bytes());
+       md5.finalize();
+       md5
+   }
+}
+    
+
 #[wasm_bindgen]
 pub async fn md5_from_file(file: &web_sys::File) -> String {
     const CHUNK_SIZE: f64 = 100.0 * 1024.0 * 1024.0; // 100MB
