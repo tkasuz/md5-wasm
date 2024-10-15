@@ -12,7 +12,7 @@ jobs:
       - uses: bencherdev/bencher@main
       - run: |
           bencher run \
-          --project save-walter-white-1234abcd \
+          --project md5gen-wasm \
           --token '${{ secrets.BENCHER_API_TOKEN }}' \
           --branch main \
           --testbed ubuntu-latest \
