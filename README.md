@@ -1,6 +1,6 @@
 # md5gen-wasm 🦀
 
-[![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.com/package/md5gen-wasm)
+![NPM Version](https://img.shields.io/npm/v/md5gen-wasm)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/md5gen-wasm)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tkasuz/md5-wasm/pr-checks.yml)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
