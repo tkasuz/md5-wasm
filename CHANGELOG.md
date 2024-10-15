@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/tkasuz/md5-wasm/compare/v0.2.0...v0.3.0) (2024-10-15)
+
+
+### Features
+
+* Adds benchmark again ([d8e3c37](https://github.com/tkasuz/md5-wasm/commit/d8e3c376997f3b5b796154715b4822f53cdf5efa))
+
 ## [0.2.0](https://github.com/tkasuz/md5-wasm/compare/v0.1.0...v0.2.0) (2024-10-15)
 
 
