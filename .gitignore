@@ -4,5 +4,4 @@ Cargo.lock
 bin/
 pkg/
 wasm-pack.log
-/examples
-/node_modules
+**/node_modules
