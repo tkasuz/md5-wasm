@@ -27,7 +27,9 @@ Here's a quick example of how to use md5gen-wasm to compute MD5 hashes in a web 
 
 ### High-level interface
 ```js
-import { md5_from_file } from 'md5gen-wasm';
+import init, { md5_from_file } from 'md5gen-wasm';
+
+await init()
 
 async function computeMD5(file) {
   const result = await md5_from_file(file);
@@ -43,8 +45,9 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
 
 ### Low-level interface
 ```js
-import { md5_from_file } from 'md5gen-wasm';
+import init, { MD5 } from 'md5gen-wasm';
 
+await init()
 const md5 = new MD5()
 md5.update("message")
 md5.finalize()
@@ -52,4 +55,4 @@ console.log(md5.digest())
 ```
 
 ## Benchmark
-<a href="https://bencher.dev/perf/md5gen-wasm?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&report=61ebaffc-dd67-45e2-a33a-38805cb3154a&branches=666f4d69-6bf0-40e0-8650-36f1846fbd2a&heads=0c9312d4-0094-4c10-a565-6486b40df986&testbeds=07f21df8-5f71-4ea2-a330-6f992adaaca4&benchmarks=e1540e1d-c537-4efd-9fc7-12fc88fcd0f2%2C54c2efa0-b09f-4e86-b3bd-823ee0365afe%2C8b893af9-4e16-43d7-aadf-21521ab4af7e%2C68edef88-ab1f-4ae6-a71c-fbd124553a04&measures=a04eb8a7-c6bd-4fa5-825e-af7cdbdb9e21&start_time=1726363759000&end_time=1728955815000&lower_boundary=false&upper_boundary=false&clear=true"><img src="https://api.bencher.dev/v0/projects/md5gen-wasm/perf/img?branches=666f4d69-6bf0-40e0-8650-36f1846fbd2a&heads=0c9312d4-0094-4c10-a565-6486b40df986&testbeds=07f21df8-5f71-4ea2-a330-6f992adaaca4&benchmarks=e1540e1d-c537-4efd-9fc7-12fc88fcd0f2%2C54c2efa0-b09f-4e86-b3bd-823ee0365afe%2C8b893af9-4e16-43d7-aadf-21521ab4af7e%2C68edef88-ab1f-4ae6-a71c-fbd124553a04&measures=a04eb8a7-c6bd-4fa5-825e-af7cdbdb9e21&start_time=1726363759000&end_time=1728955815000" title="md5gen-wasm" alt="md5gen-wasm - Bencher" /></a>
+<a href="https://bencher.dev/perf/md5gen-wasm?key=true&reports_per_page=4&branches_per_page=8&testbeds_per_page=8&benchmarks_per_page=8&plots_per_page=8&reports_page=1&branches_page=1&testbeds_page=1&benchmarks_page=1&plots_page=1&report=4d39bee8-1706-49e3-ad81-d95283210703&branches=666f4d69-6bf0-40e0-8650-36f1846fbd2a&heads=0c9312d4-0094-4c10-a565-6486b40df986&testbeds=8775d4c8-f4cd-4768-b926-145dd61c9530&benchmarks=e1540e1d-c537-4efd-9fc7-12fc88fcd0f2%2C54c2efa0-b09f-4e86-b3bd-823ee0365afe%2C8b893af9-4e16-43d7-aadf-21521ab4af7e&measures=a04eb8a7-c6bd-4fa5-825e-af7cdbdb9e21&start_time=1726443529000&end_time=1729035599000&lower_boundary=false&upper_boundary=false&clear=true"><img src="https://api.bencher.dev/v0/projects/md5gen-wasm/perf/img?branches=666f4d69-6bf0-40e0-8650-36f1846fbd2a&heads=0c9312d4-0094-4c10-a565-6486b40df986&testbeds=8775d4c8-f4cd-4768-b926-145dd61c9530&benchmarks=e1540e1d-c537-4efd-9fc7-12fc88fcd0f2%2C54c2efa0-b09f-4e86-b3bd-823ee0365afe%2C8b893af9-4e16-43d7-aadf-21521ab4af7e&measures=a04eb8a7-c6bd-4fa5-825e-af7cdbdb9e21&start_time=1726443529000&end_time=1729035599000" title="md5gen-wasm" alt="md5gen-wasm - Bencher" /></a>>

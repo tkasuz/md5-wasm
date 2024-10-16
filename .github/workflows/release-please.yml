@@ -30,7 +30,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
         if: ${{ steps.release.outputs.release_created }}
-      - run: wasm-pack build --target bundler
+      - run: wasm-pack build --target web
         if: ${{ steps.release.outputs.release_created }}
       - run: wasm-pack publish
         if: ${{ steps.release.outputs.release_created }}
