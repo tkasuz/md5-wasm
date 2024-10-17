@@ -53,7 +53,7 @@ impl MD5 {
         }
     }
 }
-    
+
 #[wasm_bindgen]
 pub fn md5_from_string(val: js_sys::JsString) -> String {
     let mut md5 = MD5::new();
