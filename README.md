@@ -27,31 +27,14 @@ Here's a quick example of how to use md5gen-wasm to compute MD5 hashes in a web 
 
 ### High-level interface
 ```js
-import init, { md5_from_file } from 'md5gen-wasm';
-
-await init()
-
-async function computeMD5(file) {
-  const result = await md5_from_file(file);
-  console.log(`MD5 hash: ${result}`);
-}
+import { from_file } from 'md5gen-wasm';
 
 // Example usage with a file input
 document.getElementById('fileInput').addEventListener('change', (event) => {
   const file = event.target.files[0];
-  computeMD5(file);
+  const result = await from_file(file);
+  console.log(`MD5 hash: ${result}`);
 });
-```
-
-### Low-level interface
-```js
-import init, { MD5 } from 'md5gen-wasm';
-
-await init()
-const md5 = new MD5()
-md5.update("message")
-md5.finalize()
-console.log(md5.digest())
 ```
 
 ## Benchmark

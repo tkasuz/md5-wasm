@@ -7,6 +7,9 @@ jobs:
   benchmark_base_branch:
     name: Benchmark
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
     steps:
       - uses: actions/checkout@v4
       - uses: bencherdev/bencher@main
