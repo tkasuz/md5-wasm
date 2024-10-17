@@ -33,6 +33,8 @@ jobs:
       - run: wasm-pack build --target bundler
         working-directory: ${{ github.workspace }}/rust
         if: ${{ steps.release.outputs.release_created }}
+      - run: npm install
+        if: ${{ steps.release.outputs.release_created }}
       - run: npm run build
         if: ${{ steps.release.outputs.release_created }}
       - run: npm run publish --provenance --access public
