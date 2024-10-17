@@ -1,5 +1,5 @@
 [package]
-name = "md5gen-wasm"
+name = "md5"
 version = "0.3.0"
 authors = ["tkasuz <tkasuz.dev@gmail.com>"]
 edition = "2021"

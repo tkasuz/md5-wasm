@@ -4,7 +4,7 @@
 
 extern crate wasm_bindgen_test;
 use js_sys::Uint8Array;
-use md5gen_wasm::{md5_from_file, md5_from_string};
+use md5::{md5_from_file, md5_from_string};
 use wasm_bindgen_test::*;
 use web_sys::File;
 

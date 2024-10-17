@@ -1,4 +1,4 @@
-use md5gen_wasm::MD5;
+use md5::MD5;
 
 #[macro_use]
 extern crate criterion;
