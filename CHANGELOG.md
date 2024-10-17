@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/tkasuz/md5-wasm/compare/v0.4.0...v0.5.0) (2024-10-17)
+
+
+### Features
+
+* enable benchmark only rust code is changed ([8547e83](https://github.com/tkasuz/md5-wasm/commit/8547e83e63aeb99c2a1c8e0452c916912782028a))
+
 ## [0.4.0](https://github.com/tkasuz/md5-wasm/compare/v0.3.0...v0.4.0) (2024-10-17)
 
 
