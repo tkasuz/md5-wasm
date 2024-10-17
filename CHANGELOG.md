@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/tkasuz/md5-wasm/compare/v0.3.0...v0.4.0) (2024-10-17)
+
+
+### Features
+
+* bump ([938d7f2](https://github.com/tkasuz/md5-wasm/commit/938d7f28182a1665f5341db86b9d875828110af6))
+
 ## [0.3.0](https://github.com/tkasuz/md5-wasm/compare/v0.2.0...v0.3.0) (2024-10-15)
 
 
