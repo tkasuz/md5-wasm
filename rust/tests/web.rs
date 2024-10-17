@@ -91,5 +91,8 @@ async fn from_file_long_string2() {
 
 #[wasm_bindgen_test]
 fn from_string() {
-    assert!( md5_from_string(js_sys::JsString::from("message digest")) == "f96b697d7cb7938d525a2f31aaf161d0");
+    assert!(
+        md5_from_string(js_sys::JsString::from("message digest"))
+            == "f96b697d7cb7938d525a2f31aaf161d0"
+    );
 }

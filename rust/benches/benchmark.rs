@@ -11,7 +11,9 @@ fn criterion_benchmark(c: &mut Criterion) {
     group.sample_size(10);
     for size in [MB, 10 * MB, 100 * MB].iter() {
         let data = Vec::from_iter(std::iter::repeat(0u8).take(*size));
-        group.throughput(criterion::Throughput::Bytes(*size as u64)).sampling_mode(criterion::SamplingMode::Flat);
+        group
+            .throughput(criterion::Throughput::Bytes(*size as u64))
+            .sampling_mode(criterion::SamplingMode::Flat);
         group.bench_with_input(
             BenchmarkId::from_parameter(size),
             data.as_slice(),
