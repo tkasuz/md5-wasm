@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/tkasuz/md5-wasm/compare/v0.6.2...v0.6.3) (2024-10-19)
+
+
+### Bug Fixes
+
+* add repository at package.json ([1fb44cb](https://github.com/tkasuz/md5-wasm/commit/1fb44cbe8bc2c45057af445e92bbdbe25b88b9fb))
+
 ## [0.6.2](https://github.com/tkasuz/md5-wasm/compare/v0.6.1...v0.6.2) (2024-10-19)
 
 
