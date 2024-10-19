@@ -56,7 +56,7 @@ impl MD5 {
 
 #[wasm_bindgen]
 pub fn md5_from_array_buffer(array_buffer: &js_sys::ArrayBuffer) -> String {
-    let byte_array = js_sys::Uint8Array::new(&array_buffer);
+    let byte_array = js_sys::Uint8Array::new(array_buffer);
     let mut md5 = MD5::new();
     md5.update(byte_array.to_vec().as_slice());
     md5.finalize();
