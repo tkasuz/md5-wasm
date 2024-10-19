@@ -32,6 +32,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - name: Install wasm-opt
         uses: baptiste0928/cargo-install@v3
+        if: ${{ steps.release.outputs.release_created }}
         with:
           crate: wasm-opt
           version: '0.116.1'
