@@ -1,5 +1,4 @@
-import './style.css'
-import {from_file, from_string} from 'md5gen-wasm'
+import {from_blob, from_string} from 'md5gen-wasm'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -13,7 +12,7 @@ if (file) {
     const target = event.target as HTMLInputElement;
     if (target && target.files) {
       console.log(target.files[0]);
-      console.log(await from_file(target.files[0]));
+      console.log(await from_blob(target.files[0]));
       console.log(await from_string('hello world'));
     }
   });

@@ -30,8 +30,16 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
         if: ${{ steps.release.outputs.release_created }}
+      - name: Install wasm-opt
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: wasm-opt
+          version: '0.116.1'
       - run: wasm-pack build --target bundler
         working-directory: ${{ github.workspace }}/rust
+        if: ${{ steps.release.outputs.release_created }}
+      - run: wasm-opt -O -o md5_bg.wasm md5_bg.wasm
+        working-directory: ${{ github.workspace }}/rust/pkg
         if: ${{ steps.release.outputs.release_created }}
       - run: npm install
         if: ${{ steps.release.outputs.release_created }}

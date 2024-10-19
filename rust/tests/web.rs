@@ -4,7 +4,7 @@
 
 extern crate wasm_bindgen_test;
 use js_sys::Uint8Array;
-use md5::{md5_from_file, md5_from_string};
+use md5::{md5_from_array_buffer, md5_from_blob, md5_from_string};
 use wasm_bindgen_test::*;
 use web_sys::File;
 
@@ -15,7 +15,7 @@ async fn from_file_empty() {
     let file =
         File::new_with_u8_array_sequence(&Uint8Array::new_with_length(0).into(), "empty.txt")
             .unwrap();
-    let result = md5_from_file(&file).await;
+    let result = md5_from_blob(&file).await;
     assert_eq!(result, "d41d8cd98f00b204e9800998ecf8427e");
 }
 
@@ -26,7 +26,7 @@ async fn from_file_a() {
         "a.txt",
     )
     .unwrap();
-    let result = md5_from_file(&file).await;
+    let result = md5_from_blob(&file).await;
     assert_eq!(result, "0cc175b9c0f1b6a831c399e269772661");
 }
 
@@ -37,7 +37,7 @@ async fn from_file_abc() {
         "abc.txt",
     )
     .unwrap();
-    let result = md5_from_file(&file).await;
+    let result = md5_from_blob(&file).await;
     assert_eq!(result, "900150983cd24fb0d6963f7d28e17f72");
 }
 
@@ -48,7 +48,7 @@ async fn from_file_message_digest() {
         "message_digest.txt",
     )
     .unwrap();
-    let result = md5_from_file(&file).await;
+    let result = md5_from_blob(&file).await;
     assert_eq!(result, "f96b697d7cb7938d525a2f31aaf161d0");
 }
 
@@ -59,7 +59,7 @@ async fn from_file_alphabet() {
         "abcdefghijklmnopqrstuvwxyz.txt",
     )
     .unwrap();
-    let result = md5_from_file(&file).await;
+    let result = md5_from_blob(&file).await;
     assert_eq!(result, "c3fcd3d76192e4007dfb496cca67e13b");
 }
 
@@ -72,7 +72,7 @@ async fn from_file_long_string1() {
         "long1.txt",
     )
     .unwrap();
-    let result = md5_from_file(&file).await;
+    let result = md5_from_blob(&file).await;
     assert_eq!(result, "d174ab98d277d9f5a5611c2c9f419d9f");
 }
 
@@ -85,14 +85,22 @@ async fn from_file_long_string2() {
         "long2.txt",
     )
     .unwrap();
-    let result = md5_from_file(&file).await;
+    let result = md5_from_blob(&file).await;
     assert_eq!(result, "57edf4a22be3c955ac49da2e2107b67a");
 }
 
 #[wasm_bindgen_test]
 fn from_string() {
     assert!(
-        md5_from_string(js_sys::JsString::from("message digest"))
-            == "f96b697d7cb7938d525a2f31aaf161d0"
+        md5_from_string(js_sys::JsString::from(""))
+            == "d41d8cd98f00b204e9800998ecf8427e"
+    );
+}
+
+#[wasm_bindgen_test]
+fn from_array_buffer() {
+    assert!(
+        md5_from_array_buffer(&js_sys::ArrayBuffer::new(0))
+            == "d41d8cd98f00b204e9800998ecf8427e"
     );
 }

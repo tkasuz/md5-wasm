@@ -55,6 +55,15 @@ impl MD5 {
 }
 
 #[wasm_bindgen]
+pub fn md5_from_array_buffer(array_buffer: &js_sys::ArrayBuffer) -> String {
+    let byte_array = js_sys::Uint8Array::new(&array_buffer);
+    let mut md5 = MD5::new();
+    md5.update(byte_array.to_vec().as_slice());
+    md5.finalize();
+    md5.digest().unwrap()
+}
+
+#[wasm_bindgen]
 pub fn md5_from_string(val: js_sys::JsString) -> String {
     let mut md5 = MD5::new();
     md5.update(val.as_string().unwrap().as_bytes());
@@ -63,13 +72,13 @@ pub fn md5_from_string(val: js_sys::JsString) -> String {
 }
 
 #[wasm_bindgen]
-pub async fn md5_from_file(file: &web_sys::File) -> String {
+pub async fn md5_from_blob(blob: &web_sys::Blob) -> String {
     const CHUNK_SIZE: f64 = 100.0 * 1024.0 * 1024.0; // 100MB
     let mut md5 = MD5::new();
 
     // If the file is smaller than the chunk size, we can read it all at once
-    if file.size() < CHUNK_SIZE {
-        let blob = file.slice_with_f64_and_f64(0.0, file.size()).unwrap();
+    if blob.size() < CHUNK_SIZE {
+        let blob = blob.slice_with_f64_and_f64(0.0, blob.size()).unwrap();
         let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer())
             .await
             .unwrap();
@@ -81,9 +90,9 @@ pub async fn md5_from_file(file: &web_sys::File) -> String {
 
     // Otherwise, we need to read the file in chunks
     let mut start = f64::from(0);
-    while start < file.size() {
-        let end = (start + CHUNK_SIZE).min(file.size());
-        let blob = file.slice_with_f64_and_f64(start, end).unwrap();
+    while start < blob.size() {
+        let end = (start + CHUNK_SIZE).min(blob.size());
+        let blob = blob.slice_with_f64_and_f64(start, end).unwrap();
         let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer())
             .await
             .unwrap();
