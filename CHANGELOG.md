@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/tkasuz/md5-wasm/compare/v0.6.1...v0.6.2) (2024-10-19)
+
+
+### Bug Fixes
+
+* add id-token: write ([4760751](https://github.com/tkasuz/md5-wasm/commit/47607511c497b049a258072fa7975a5556203f90))
+
 ## [0.6.1](https://github.com/tkasuz/md5-wasm/compare/v0.6.0...v0.6.1) (2024-10-19)
 
 
