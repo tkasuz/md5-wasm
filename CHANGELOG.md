@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/tkasuz/md5-wasm/compare/v0.5.0...v0.6.0) (2024-10-19)
+
+
+### Features
+
+* Adds from_array_buffer ([612ae54](https://github.com/tkasuz/md5-wasm/commit/612ae548e0d584eb80c2373843bbaff34b6fe241))
+
+
+### Bug Fixes
+
+* format ([af27d15](https://github.com/tkasuz/md5-wasm/commit/af27d1598286cf546c66fbe633dda87401eac4cb))
+* lint ([b55ce5f](https://github.com/tkasuz/md5-wasm/commit/b55ce5faa024fc2be999181d05089f9801acce20))
+
 ## [0.5.0](https://github.com/tkasuz/md5-wasm/compare/v0.4.0...v0.5.0) (2024-10-17)
 
 
