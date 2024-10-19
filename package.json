@@ -1,6 +1,6 @@
 {
   "name": "md5gen-wasm",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "`md5gen-wasm` is a WebAssembly (Wasm) library for generating MD5 hashes. This project leverages Rust and Wasm to provide a fast and efficient way to compute MD5 hashes directly in the browser or other Wasm-supported environments 🦀",
   "directories": {
     "example": "example"
