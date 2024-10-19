@@ -91,16 +91,12 @@ async fn from_file_long_string2() {
 
 #[wasm_bindgen_test]
 fn from_string() {
-    assert!(
-        md5_from_string(js_sys::JsString::from(""))
-            == "d41d8cd98f00b204e9800998ecf8427e"
-    );
+    assert!(md5_from_string(js_sys::JsString::from("")) == "d41d8cd98f00b204e9800998ecf8427e");
 }
 
 #[wasm_bindgen_test]
 fn from_array_buffer() {
     assert!(
-        md5_from_array_buffer(&js_sys::ArrayBuffer::new(0))
-            == "d41d8cd98f00b204e9800998ecf8427e"
+        md5_from_array_buffer(&js_sys::ArrayBuffer::new(0)) == "d41d8cd98f00b204e9800998ecf8427e"
     );
 }
