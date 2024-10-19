@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/tkasuz/md5-wasm/compare/v0.6.0...v0.6.1) (2024-10-19)
+
+
+### Bug Fixes
+
+* npm publish ([77fe38c](https://github.com/tkasuz/md5-wasm/commit/77fe38c41c76b1a72030f8842202e712cd9360c6))
+
 ## [0.6.0](https://github.com/tkasuz/md5-wasm/compare/v0.5.0...v0.6.0) (2024-10-19)
 
 
