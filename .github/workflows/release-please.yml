@@ -40,7 +40,7 @@ jobs:
       - run: wasm-pack build --target bundler
         working-directory: ${{ github.workspace }}/rust
         if: ${{ steps.release.outputs.release_created }}
-      - run: wasm-opt -O -o md5_bg.wasm md5_bg.wasm
+      - run: wasm-opt -O3 -o md5_bg.wasm md5_bg.wasm
         working-directory: ${{ github.workspace }}/rust/pkg
         if: ${{ steps.release.outputs.release_created }}
       - run: npm install

@@ -1,65 +1,44 @@
 use std::{convert::TryInto, fmt};
 
-pub struct Buffer {
+pub struct Status {
     a: u32,
     b: u32,
     c: u32,
     d: u32,
 }
 
-impl fmt::Display for Buffer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{:08x}{:08x}{:08x}{:08x}",
-            self.a.swap_bytes(),
-            self.b.swap_bytes(),
-            self.c.swap_bytes(),
-            self.d.swap_bytes()
-        )
+pub fn padding(total_length: usize, value: &mut Vec<u8>) -> &[u8] {
+    let total_length = total_length.saturating_mul(8) as u64;
+    // Step 1: Append Padding Bits
+    value.push(0b10000000); // Append "1" bit
+    while (value.len() * 8) % 512 != 448 {
+        // 448 = 512 - 64
+        value.push(0u8); // Append "0" bits
     }
+    /*
+    Step 2. Append Length (64 bits integer)
+    A 64-bit representation of b is appended to the result of the previous step
+    */
+    value.extend(&[
+        total_length as u8,
+        (total_length >> 8) as u8,
+        (total_length >> 16) as u8,
+        (total_length >> 24) as u8,
+        (total_length >> 32) as u8,
+        (total_length >> 40) as u8,
+        (total_length >> 48) as u8,
+        (total_length >> 56) as u8,
+    ]);
+    value.as_slice()
 }
 
-pub struct MD5Builder {
-    pub state: Buffer,
-    total_length: u64,
-    pub digest: Option<String>,
-}
-
-impl MD5Builder {
-    fn padding(&self, value: &mut Vec<u8>) {
-        // Step 1: Append Padding Bits
-        value.push(0b10000000); // Append "1" bit
-        while (value.len() * 8) % 512 != 448 {
-            // 448 = 512 - 64
-            value.push(0u8); // Append "0" bits
-        }
-        /*
-        Step 2. Append Length (64 bits integer)
-        A 64-bit representation of b is appended to the result of the previous step
-        */
-        value.extend(&[
-            self.total_length as u8,
-            (self.total_length >> 8) as u8,
-            (self.total_length >> 16) as u8,
-            (self.total_length >> 24) as u8,
-            (self.total_length >> 32) as u8,
-            (self.total_length >> 40) as u8,
-            (self.total_length >> 48) as u8,
-            (self.total_length >> 56) as u8,
-        ]);
+impl Status {
+    pub fn digest(&self) -> String {
+        self.to_string()
     }
-
-    pub fn update(&mut self, mut value: Vec<u8>, padding: bool) {
-        self.total_length = self
-            .total_length
-            .wrapping_add(value.len().saturating_mul(8) as u64);
-        if padding {
-            self.padding(&mut value);
-        }
-
-        let (mut a, mut b, mut c, mut d) = (self.state.a, self.state.b, self.state.c, self.state.d);
-        for block in value.chunks_exact_mut(64) {
+    pub fn update(&self, value: &[u8]) -> Self {
+        let (mut a, mut b, mut c, mut d) = (self.a, self.b, self.c, self.d);
+        for block in value.chunks_exact(64) {
             let mut x = [0u32; 16];
             for (j, chunk) in block.chunks_exact(4).enumerate() {
                 x[j] = u32::from_le_bytes(chunk.try_into().unwrap());
@@ -186,27 +165,32 @@ impl MD5Builder {
             c = c.wrapping_add(cc);
             d = d.wrapping_add(dd);
         }
-        self.state.a = a;
-        self.state.b = b;
-        self.state.c = c;
-        self.state.d = d;
 
-        if padding {
-            self.digest = Some(self.state.to_string());
+        Self { a, b, c, d }
+    }
+}
+
+impl Default for Status {
+    fn default() -> Self {
+        Self {
+            a: u32::from_le_bytes([0x01, 0x23, 0x45, 0x67]),
+            b: u32::from_le_bytes([0x89, 0xab, 0xcd, 0xef]),
+            c: u32::from_le_bytes([0xfe, 0xdc, 0xba, 0x98]),
+            d: u32::from_le_bytes([0x76, 0x54, 0x32, 0x10]),
         }
     }
+}
 
-    pub fn new() -> Self {
-        Self {
-            state: Buffer {
-                a: u32::from_le_bytes([0x01, 0x23, 0x45, 0x67]),
-                b: u32::from_le_bytes([0x89, 0xab, 0xcd, 0xef]),
-                c: u32::from_le_bytes([0xfe, 0xdc, 0xba, 0x98]),
-                d: u32::from_le_bytes([0x76, 0x54, 0x32, 0x10]),
-            },
-            total_length: 0,
-            digest: None,
-        }
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{:08x}{:08x}{:08x}{:08x}",
+            self.a.swap_bytes(),
+            self.b.swap_bytes(),
+            self.c.swap_bytes(),
+            self.d.swap_bytes()
+        )
     }
 }
 
@@ -217,22 +201,11 @@ mod tests {
     #[test]
     fn success() {
         fn hash_from_string(value: &str) -> String {
-            let mut builder = MD5Builder::new();
-            if value.is_empty() {
-                builder.update(value.as_bytes().to_vec(), true);
-                return builder.state.to_string();
-            }
-            for block in value.as_bytes().to_vec().chunks(64) {
-                match block.len() == 64 {
-                    true => {
-                        builder.update(block.to_vec(), false);
-                    }
-                    false => {
-                        builder.update(block.to_vec(), true);
-                    }
-                }
-            }
-            builder.state.to_string()
+            let status = Status::default();
+            let mut value_vec = value.as_bytes().to_vec();
+            let value = padding(value.len(), &mut value_vec);
+            let status = status.update(value);
+            status.digest()
         }
         assert!(hash_from_string("") == "d41d8cd98f00b204e9800998ecf8427e");
         assert!(hash_from_string("a") == "0cc175b9c0f1b6a831c399e269772661");
