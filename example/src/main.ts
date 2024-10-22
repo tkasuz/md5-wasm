@@ -1,4 +1,4 @@
-import {from_array_buffer, from_string, from_file} from 'md5gen-wasm'
+import Worker from './worker.js?worker'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -7,14 +7,17 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `
 
 const file = document.getElementById('file');
+const worker = new Worker();
+
+worker.onmessage = (e) => {
+  console.log(e.data);
+};
+
 if (file) {
   file.addEventListener('change', async (event) => {
     const target = event.target as HTMLInputElement;
     if (target && target.files) {
-      console.log(target.files[0]);
-      console.log(await from_file(target.files[0]));
-      console.log(await from_string('hello world'));
-      console.log(await from_array_buffer(new ArrayBuffer(0)));
+      worker.postMessage(target.files[0]);
     }
   });
 };
