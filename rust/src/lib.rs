@@ -6,10 +6,10 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub fn md5_from_array_buffer(val: &js_sys::ArrayBuffer) -> String {
     let status = Status::default();
-    let length = val.byte_length() as usize;
+    let length = val.byte_length();
     let val = js_sys::Uint8Array::new(val);
     let mut val = val.to_vec();
-    let val = padding(length, val.as_mut());
+    let val = padding(length as u64, val.as_mut());
     let status = status.update(val);
     status.digest()
 }
@@ -18,7 +18,7 @@ fn from_string(val: String) -> String {
     let status = Status::default();
     let length = val.len();
     let mut val = val.as_bytes().to_vec();
-    let val = padding(length, val.as_mut());
+    let val = padding(length as u64, val.as_mut());
     let status = status.update(val);
     status.digest()
 }
@@ -31,7 +31,7 @@ pub fn md5_from_string(val: js_sys::JsString) -> String {
 
 #[wasm_bindgen]
 pub async fn md5_from_file(file: &web_sys::File) -> String {
-    const CHUNK_SIZE: f64 = 150.0 * 1024.0 * 1024.0; // 100 MB
+    const CHUNK_SIZE: f64 = 100.0 * 1024.0 * 1024.0; // 100 MB
     let mut status = Status::default();
     let file_size = file.size();
 
@@ -39,7 +39,7 @@ pub async fn md5_from_file(file: &web_sys::File) -> String {
     let mut end = start + CHUNK_SIZE;
     let mut is_final_chunk = false;
 
-    let status = loop {
+    loop {
         let blob_slice = match end >= file_size {
             true => {
                 is_final_chunk = true;
@@ -53,15 +53,15 @@ pub async fn md5_from_file(file: &web_sys::File) -> String {
         let byte_array = js_sys::Uint8Array::new(&array_buffer);
         let mut value = byte_array.to_vec();
         if is_final_chunk {
-            let padding_value = padding(file_size as usize, value.as_mut());
+            let padding_value = padding(file_size as u64, value.as_mut());
             status = status.update(padding_value);
-            break status;
+            break;
         } else {
             status = status.update(value.as_slice());
         }
         start = end;
-        end += CHUNK_SIZE;
-    };
+        end = start + CHUNK_SIZE;
+    }
     status.digest()
 }
 
