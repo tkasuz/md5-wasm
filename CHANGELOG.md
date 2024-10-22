@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.4](https://github.com/tkasuz/md5-wasm/compare/v0.6.3...v0.6.4) (2024-10-22)
+
+
+### Bug Fixes
+
+* dependent bot ([d03afca](https://github.com/tkasuz/md5-wasm/commit/d03afca80e40ab47dbeeda24ac2a6df15460a499))
+
 ## [0.6.3](https://github.com/tkasuz/md5-wasm/compare/v0.6.2...v0.6.3) (2024-10-19)
 
 
