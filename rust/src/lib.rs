@@ -1,107 +1,68 @@
 mod utils;
 
-use utils::MD5Builder;
+use utils::{padding, Status};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub struct MD5 {
-    buffer: Vec<u8>,
-    builder: MD5Builder,
+pub fn md5_from_array_buffer(val: &js_sys::ArrayBuffer) -> String {
+    let status = Status::default();
+    let length = val.byte_length();
+    let val = js_sys::Uint8Array::new(val);
+    let mut val = val.to_vec();
+    let val = padding(length as u64, val.as_mut());
+    let status = status.update(val);
+    status.digest()
 }
 
-impl Default for MD5 {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[wasm_bindgen]
-impl MD5 {
-    #[wasm_bindgen(constructor)]
-    pub fn new() -> MD5 {
-        MD5 {
-            buffer: Vec::new(),
-            builder: MD5Builder::new(),
-        }
-    }
-
-    pub fn digest(&self) -> Option<String> {
-        self.builder.digest.clone()
-    }
-
-    fn buffer_size(&self) -> usize {
-        self.buffer.len()
-    }
-
-    pub fn update(&mut self, val: &[u8]) {
-        self.buffer.extend_from_slice(val);
-        if self.buffer_size() <= 64 {
-            return;
-        }
-        let mut chunks = self.buffer.chunks_exact(64);
-        for chunk in &mut chunks {
-            self.builder.update(chunk.to_vec(), false);
-        }
-        let last_block = chunks.remainder().to_vec();
-        self.buffer.clear();
-        self.buffer.extend_from_slice(&last_block);
-    }
-
-    pub fn finalize(&mut self) {
-        if self.digest().is_none() {
-            self.builder.update(self.buffer.to_vec(), true);
-        }
-    }
-}
-
-#[wasm_bindgen]
-pub fn md5_from_array_buffer(array_buffer: &js_sys::ArrayBuffer) -> String {
-    let byte_array = js_sys::Uint8Array::new(array_buffer);
-    let mut md5 = MD5::new();
-    md5.update(byte_array.to_vec().as_slice());
-    md5.finalize();
-    md5.digest().unwrap()
+fn from_string(val: String) -> String {
+    let status = Status::default();
+    let length = val.len();
+    let mut val = val.as_bytes().to_vec();
+    let val = padding(length as u64, val.as_mut());
+    let status = status.update(val);
+    status.digest()
 }
 
 #[wasm_bindgen]
 pub fn md5_from_string(val: js_sys::JsString) -> String {
-    let mut md5 = MD5::new();
-    md5.update(val.as_string().unwrap().as_bytes());
-    md5.finalize();
-    md5.digest().unwrap()
+    let val = val.as_string().unwrap();
+    from_string(val)
 }
 
 #[wasm_bindgen]
-pub async fn md5_from_blob(blob: &web_sys::Blob) -> String {
-    const CHUNK_SIZE: f64 = 100.0 * 1024.0 * 1024.0; // 100MB
-    let mut md5 = MD5::new();
+pub async fn md5_from_file(file: &web_sys::File) -> String {
+    const CHUNK_SIZE: f64 = 100.0 * 1024.0 * 1024.0; // 100 MB
+    let mut status = Status::default();
+    let file_size = file.size();
 
-    // If the file is smaller than the chunk size, we can read it all at once
-    if blob.size() < CHUNK_SIZE {
-        let blob = blob.slice_with_f64_and_f64(0.0, blob.size()).unwrap();
-        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer())
+    let mut start = 0.0;
+    let mut end = start + CHUNK_SIZE;
+    let mut is_final_chunk = false;
+
+    loop {
+        let blob_slice = match end >= file_size {
+            true => {
+                is_final_chunk = true;
+                file.slice_with_f64(start).unwrap()
+            }
+            false => file.slice_with_f64_and_f64(start, end).unwrap(),
+        };
+        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob_slice.array_buffer())
             .await
             .unwrap();
         let byte_array = js_sys::Uint8Array::new(&array_buffer);
-        md5.update(byte_array.to_vec().as_slice());
-        md5.finalize();
-        return md5.digest().unwrap();
-    }
-
-    // Otherwise, we need to read the file in chunks
-    let mut start = f64::from(0);
-    while start < blob.size() {
-        let end = (start + CHUNK_SIZE).min(blob.size());
-        let blob = blob.slice_with_f64_and_f64(start, end).unwrap();
-        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob.array_buffer())
-            .await
-            .unwrap();
-        let byte_array = js_sys::Uint8Array::new(&array_buffer);
-        md5.update(byte_array.to_vec().as_slice());
+        let mut value = byte_array.to_vec();
+        if is_final_chunk {
+            let padding_value = padding(file_size as u64, value.as_mut());
+            status = status.update(padding_value);
+            break;
+        } else {
+            status = status.update(value.as_slice());
+        }
         start = end;
+        end = start + CHUNK_SIZE;
     }
-    md5.finalize();
-    md5.digest().unwrap()
+    status.digest()
 }
 
 #[cfg(test)]
@@ -110,72 +71,42 @@ mod tests {
 
     #[test]
     fn empty_string() {
-        let mut md5 = MD5::new();
-        md5.update("".as_bytes());
-        md5.finalize();
-        assert!(md5.digest() == Some("d41d8cd98f00b204e9800998ecf8427e".to_string()));
+        let hex = from_string("".to_string());
+        assert!(hex == "d41d8cd98f00b204e9800998ecf8427e");
     }
     #[test]
     fn a() {
-        let mut md5 = MD5::new();
-        md5.update("a".as_bytes());
-        md5.finalize();
-        assert!(md5.digest() == Some("0cc175b9c0f1b6a831c399e269772661".to_string()));
+        let hex = from_string("a".to_string());
+        assert!(hex == "0cc175b9c0f1b6a831c399e269772661");
     }
     #[test]
     fn abc() {
-        let mut md5 = MD5::new();
-        md5.update("abc".as_bytes());
-        md5.finalize();
-        assert!(md5.digest() == Some("900150983cd24fb0d6963f7d28e17f72".to_string()));
+        let hex = from_string("abc".to_string());
+        assert!(hex == "900150983cd24fb0d6963f7d28e17f72");
     }
     #[test]
     fn short_string1() {
-        let mut md5 = MD5::new();
-        md5.update("message digest".as_bytes());
-        md5.finalize();
-        assert!(md5.digest() == Some("f96b697d7cb7938d525a2f31aaf161d0".to_string()));
+        let hex = from_string("message digest".to_string());
+        assert!(hex == "f96b697d7cb7938d525a2f31aaf161d0");
     }
     #[test]
     fn short_string2() {
-        let mut md5 = MD5::new();
-        md5.update("abcdefghijklmnopqrstuvwxyz".as_bytes());
-        md5.finalize();
-        assert!(md5.digest() == Some("c3fcd3d76192e4007dfb496cca67e13b".to_string()));
+        let hex = from_string("abcdefghijklmnopqrstuvwxyz".to_string());
+        assert!(hex == "c3fcd3d76192e4007dfb496cca67e13b");
     }
     #[test]
     fn long_string1() {
-        let mut md5 = MD5::new();
-        md5.update("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes());
-        md5.finalize();
-        assert!(md5.digest() == Some("d174ab98d277d9f5a5611c2c9f419d9f".to_string()));
-
-        let mut md5 = MD5::new();
-        md5.update("ABCDEFGHIJKLMNOPQRSTUVWXYZ".as_bytes());
-        md5.update("abcdefghijklmnopqrstuvwxyz0123456789".as_bytes());
-        md5.finalize();
-        assert!(md5.digest() == Some("d174ab98d277d9f5a5611c2c9f419d9f".to_string()));
+        let hex = from_string(
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".to_string(),
+        );
+        assert!(hex == "d174ab98d277d9f5a5611c2c9f419d9f");
     }
     #[test]
     fn long_string2() {
-        let mut md5 = MD5::new();
-        md5.update(
+        let hex = from_string(
             "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                .as_bytes(),
+                .to_string(),
         );
-        md5.finalize();
-        assert!(md5.digest() == Some("57edf4a22be3c955ac49da2e2107b67a".to_string()));
-
-        let mut md5 = MD5::new();
-        md5.update("1234567890".as_bytes());
-        md5.update("1234567890".as_bytes());
-        md5.update("1234567890".as_bytes());
-        md5.update("1234567890".as_bytes());
-        md5.update("1234567890".as_bytes());
-        md5.update("1234567890".as_bytes());
-        md5.update("1234567890".as_bytes());
-        md5.update("1234567890".as_bytes());
-        md5.finalize();
-        assert!(md5.digest() == Some("57edf4a22be3c955ac49da2e2107b67a".to_string()));
+        assert!(hex == "57edf4a22be3c955ac49da2e2107b67a");
     }
 }
