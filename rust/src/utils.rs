@@ -1,37 +1,31 @@
 use std::fmt;
 
 mod round {
+    #[inline(always)]
     pub fn round1(a: &mut u32, b: u32, c: u32, d: u32, x: u32, s: u32, t: u32) {
-        *a = b.wrapping_add(
-            (*a).wrapping_add(b & c | !b & d)
-                .wrapping_add(x)
-                .wrapping_add(t)
-                .rotate_left(s),
-        )
+        let temp = a
+            .wrapping_add((b & c) | (!b & d))
+            .wrapping_add(x)
+            .wrapping_add(t);
+        *a = b.wrapping_add(temp.rotate_left(s));
     }
+    #[inline(always)]
     pub fn round2(a: &mut u32, b: u32, c: u32, d: u32, x: u32, s: u32, t: u32) {
-        *a = b.wrapping_add(
-            (*a).wrapping_add(b & d | c & !d)
-                .wrapping_add(x)
-                .wrapping_add(t)
-                .rotate_left(s),
-        )
+        let temp = a
+            .wrapping_add((b & d) | (c & !d))
+            .wrapping_add(x)
+            .wrapping_add(t);
+        *a = b.wrapping_add(temp.rotate_left(s));
     }
+    #[inline(always)]
     pub fn round3(a: &mut u32, b: u32, c: u32, d: u32, x: u32, s: u32, t: u32) {
-        *a = b.wrapping_add(
-            (*a).wrapping_add(b ^ c ^ d)
-                .wrapping_add(x)
-                .wrapping_add(t)
-                .rotate_left(s),
-        )
+        let temp = a.wrapping_add(b ^ c ^ d).wrapping_add(x).wrapping_add(t);
+        *a = b.wrapping_add(temp.rotate_left(s));
     }
+    #[inline(always)]
     pub fn round4(a: &mut u32, b: u32, c: u32, d: u32, x: u32, s: u32, t: u32) {
-        *a = b.wrapping_add(
-            (*a).wrapping_add(c ^ (b | !d))
-                .wrapping_add(x)
-                .wrapping_add(t)
-                .rotate_left(s),
-        )
+        let temp = a.wrapping_add(c ^ (b | !d)).wrapping_add(x).wrapping_add(t);
+        *a = b.wrapping_add(temp.rotate_left(s));
     }
 }
 
@@ -71,7 +65,7 @@ impl Status {
     pub fn digest(&self) -> String {
         self.to_string()
     }
-    pub fn update(&self, value: &[u8]) -> Self {
+    pub fn update(&mut self, value: &[u8]) {
         let (mut a, mut b, mut c, mut d) = (self.a, self.b, self.c, self.d);
         let mut x = [0u32; 16];
         for block in value.chunks_exact(64) {
@@ -160,7 +154,10 @@ impl Status {
             d = d.wrapping_add(dd);
         }
 
-        Self { a, b, c, d }
+        self.a = a;
+        self.b = b;
+        self.c = c;
+        self.d = d;
     }
 }
 
@@ -195,10 +192,10 @@ mod tests {
     #[test]
     fn success() {
         fn hash_from_string(value: &str) -> String {
-            let status = Status::default();
+            let mut status = Status::default();
             let mut value_vec = value.as_bytes().to_vec();
-            let value = padding(value.len() as u64, &mut value_vec);
-            let status = status.update(value);
+            let extended_value = padding(value.len() as u64, &mut value_vec);
+            status.update(extended_value);
             status.digest()
         }
         assert!(hash_from_string("") == "d41d8cd98f00b204e9800998ecf8427e");

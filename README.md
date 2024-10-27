@@ -26,15 +26,18 @@ npm install md5gen-wasm
 Here's a quick example of how to use md5gen-wasm to compute MD5 hashes in a web application:
 
 ### High-level interface
-```js
-import { from_file } from 'md5gen-wasm';
+```typescript
+import { md5_from_file } from 'md5gen-wasm';
 
 // Example usage with a file input
-document.getElementById('fileInput').addEventListener('change', (event) => {
-  const file = event.target.files[0];
-  const result = await from_file(file);
-  console.log(`MD5 hash: ${result}`);
-});
+document.getElementById('fileInput')?.addEventListener('change', async (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0];
+    const result = await md5_from_file(file);
+    console.log(`MD5 hash: ${result}`);
+  }
+});;
 ```
 
 ## Benchmark
