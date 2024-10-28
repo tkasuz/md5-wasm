@@ -6,6 +6,10 @@ import SuperFastMd5Worker from './super_fast_md5.js?worker'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
+    <h1>MD5 Hash Benchmark</h1>
+    <div>
+      <a href="https://github.com/tkasuz/md5-wasm/tree/main/example">Source code</a>
+    </div>
     <input type="file" id="file">
     <table>
       <thead>
