@@ -31,7 +31,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 const file = document.getElementById('file');
 const worker = new Worker();
 const hashWasmWorker = new HashWasmWorker();
-const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
 
 worker.onmessage = (e) => {
@@ -50,7 +49,7 @@ if (file) {
   file.addEventListener('change', async (event) => {
     const target = event.target as HTMLInputElement;
     if (target && target.files) {
-      hashWasmWorker.postMessage(target.files[0]);
+      worker.postMessage(target.files[0]);
     }
   });
 };
@@ -59,7 +58,7 @@ if (file) {
   file.addEventListener('change', async (event) => {
     const target = event.target as HTMLInputElement;
     if (target && target.files) {
-      worker.postMessage(target.files[0]);
+      hashWasmWorker.postMessage(target.files[0]);
     }
   });
 };
