@@ -36,7 +36,7 @@ pub struct Status {
     d: u32,
 }
 
-pub fn padding(total_length: u64, value: &mut Vec<u8>) -> &[u8] {
+pub fn padding(total_length: u64, value: &mut Vec<u8>) {
     let total_length = total_length.saturating_mul(8);
     // Step 1: Append Padding Bits
     value.push(0b10000000); // Append "1" bit
@@ -58,7 +58,6 @@ pub fn padding(total_length: u64, value: &mut Vec<u8>) -> &[u8] {
         (total_length >> 48) as u8,
         (total_length >> 56) as u8,
     ]);
-    value.as_slice()
 }
 
 impl Status {
@@ -194,8 +193,8 @@ mod tests {
         fn hash_from_string(value: &str) -> String {
             let mut status = Status::default();
             let mut value_vec = value.as_bytes().to_vec();
-            let extended_value = padding(value.len() as u64, &mut value_vec);
-            status.update(extended_value);
+            padding(value.len() as u64, &mut value_vec);
+            status.update(value_vec.as_slice());
             status.digest()
         }
         assert!(hash_from_string("") == "d41d8cd98f00b204e9800998ecf8427e");

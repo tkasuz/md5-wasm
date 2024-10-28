@@ -50,9 +50,16 @@ if (file) {
   file.addEventListener('change', async (event) => {
     const target = event.target as HTMLInputElement;
     if (target && target.files) {
-      worker.postMessage(target.files[0]);
-      await sleep(3000);
       hashWasmWorker.postMessage(target.files[0]);
+    }
+  });
+};
+
+if (file) {
+  file.addEventListener('change', async (event) => {
+    const target = event.target as HTMLInputElement;
+    if (target && target.files) {
+      worker.postMessage(target.files[0]);
     }
   });
 };

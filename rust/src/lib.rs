@@ -5,21 +5,22 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub fn md5_from_u8_array(val: &[u8]) -> String {
-    const CHUNK_SIZE: usize = 200 * 1024 * 1024; // 100 MB
+    const CHUNK_SIZE: usize = 1024; // 1KB
     let mut status = Status::default();
     let size = val.len();
     if size == 0 {
         let mut val_vec = val.to_vec();
-        let final_chunk = padding(size as u64, &mut val_vec);
-        status.update(final_chunk);
+        padding(size as u64, &mut val_vec);
+        status.update(val_vec.as_slice());
         return status.digest();
     }
 
     for chunk in val.chunks(CHUNK_SIZE) {
         if chunk.len() < CHUNK_SIZE {
-            let mut chunk_vec = chunk.to_vec();
-            let final_chunk = padding(size as u64, &mut chunk_vec);
-            status.update(final_chunk);
+            let mut v = Vec::<u8>::with_capacity(chunk.len() + 521);
+            v.append(chunk.to_vec().as_mut());
+            padding(size as u64, &mut v);
+            status.update(v.as_slice());
         } else {
             status.update(chunk);
         }
