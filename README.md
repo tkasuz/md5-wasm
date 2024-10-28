@@ -1,17 +1,18 @@
-# md5gen-wasm 🦀
+# md5gen-wasm ⚡️
 
 ![NPM Version](https://img.shields.io/npm/v/md5gen-wasm)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/md5gen-wasm)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tkasuz/md5-wasm/pr-checks.yml)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CodSpeed Badge](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/tkasuz/md5-wasm)
 
 `md5gen-wasm` is a lightning-fast ⚡️ WebAssembly library designed for generating MD5 hashes. Built with Rust 🦀 and Wasm, this project offers a highly efficient way to compute MD5 hashes directly in the browser or any Wasm-supported environment..
 
 ## Features
 
-- **Fastest MD5 Hashing**:  Based on [benchmark tests](./example/) done in example applications, md5gen-wasm is the fastest MD5 hashing library available.
-- **Efficient Memory Usage**: Automatically chunks the given file to manage memory consumption efficiently.
+- **Fastest MD5 Hashing** ⚡️:  Based on [benchmark tests](./example/) done in example applications, md5gen-wasm is the fastest MD5 hashing library available.
+- **Efficient Memory Usage** 📦: Automatically chunks the given file to manage memory consumption efficiently.
 - **WebAssembly**: Run in any environment that supports WebAssembly, including modern web browsers.
 
 ## Installation
@@ -38,6 +39,9 @@ document.getElementById('fileInput')?.addEventListener('change', async (event: E
   }
 });;
 ```
+
+## Benchmark 🚀
+You can make your own benchmark [here](https://tkasuz.github.io/md5-wasm/)
 
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request on GitHub.

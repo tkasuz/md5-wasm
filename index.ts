@@ -1,5 +1,10 @@
 import {Md5} from './rust/pkg/'
 
+/**
+ * Calculate MD5 hash from File or Blob
+ * @param input File or Blob
+ * @returns MD5 hash
+ */
 export async function md5_from_file(input: File | Blob): Promise<string> {
     const md5 = new Md5();
     const reader = input.stream().getReader();
