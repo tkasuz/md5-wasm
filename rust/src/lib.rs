@@ -4,65 +4,49 @@ use utils::{padding, Status};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub fn md5_from_array_buffer(val: &js_sys::ArrayBuffer) -> String {
-    let status = Status::default();
-    let length = val.byte_length();
-    let val = js_sys::Uint8Array::new(val);
-    let mut val = val.to_vec();
-    let val = padding(length as u64, val.as_mut());
-    let status = status.update(val);
-    status.digest()
+pub struct Md5 {
+    status: Status,
+    size: u64,
+    buffer: Vec<u8>,
 }
 
-fn from_string(val: String) -> String {
-    let status = Status::default();
-    let length = val.len();
-    let mut val = val.as_bytes().to_vec();
-    let val = padding(length as u64, val.as_mut());
-    let status = status.update(val);
-    status.digest()
-}
-
-#[wasm_bindgen]
-pub fn md5_from_string(val: js_sys::JsString) -> String {
-    let val = val.as_string().unwrap();
-    from_string(val)
-}
-
-#[wasm_bindgen]
-pub async fn md5_from_file(file: &web_sys::File) -> String {
-    const CHUNK_SIZE: f64 = 100.0 * 1024.0 * 1024.0; // 100 MB
-    let mut status = Status::default();
-    let file_size = file.size();
-
-    let mut start = 0.0;
-    let mut end = start + CHUNK_SIZE;
-    let mut is_final_chunk = false;
-
-    loop {
-        let blob_slice = match end >= file_size {
-            true => {
-                is_final_chunk = true;
-                file.slice_with_f64(start).unwrap()
-            }
-            false => file.slice_with_f64_and_f64(start, end).unwrap(),
-        };
-        let array_buffer = wasm_bindgen_futures::JsFuture::from(blob_slice.array_buffer())
-            .await
-            .unwrap();
-        let byte_array = js_sys::Uint8Array::new(&array_buffer);
-        let mut value = byte_array.to_vec();
-        if is_final_chunk {
-            let padding_value = padding(file_size as u64, value.as_mut());
-            status = status.update(padding_value);
-            break;
-        } else {
-            status = status.update(value.as_slice());
-        }
-        start = end;
-        end = start + CHUNK_SIZE;
+impl Default for Md5 {
+    fn default() -> Self {
+        Self::new()
     }
-    status.digest()
+}
+
+#[wasm_bindgen]
+impl Md5 {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self {
+            status: Status::default(),
+            size: 0,
+            buffer: Vec::new(),
+        }
+    }
+
+    pub fn update(&mut self, val: &[u8]) {
+        self.size = self.size.wrapping_add(val.len() as u64);
+        self.buffer.extend_from_slice(val);
+        let mut iter = self.buffer.chunks_exact(64);
+        for chunk in iter.by_ref() {
+            self.status.update(chunk);
+        }
+        self.buffer = iter.remainder().to_vec();
+    }
+
+    pub fn finalize(&mut self) {
+        let mut v = Vec::<u8>::with_capacity(self.buffer.len() + 521);
+        v.append(self.buffer.to_vec().as_mut());
+        padding(self.size, &mut v);
+        self.status.update(v.as_slice());
+    }
+
+    pub fn digest(&self) -> String {
+        self.status.digest()
+    }
 }
 
 #[cfg(test)]
@@ -71,42 +55,113 @@ mod tests {
 
     #[test]
     fn empty_string() {
-        let hex = from_string("".to_string());
+        let input = "".as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
+        print!("hex: {}", hex);
         assert!(hex == "d41d8cd98f00b204e9800998ecf8427e");
     }
     #[test]
     fn a() {
-        let hex = from_string("a".to_string());
+        let input = "a".as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
+        print!("hex: {}", hex);
         assert!(hex == "0cc175b9c0f1b6a831c399e269772661");
     }
     #[test]
     fn abc() {
-        let hex = from_string("abc".to_string());
+        let input = "abc".as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
         assert!(hex == "900150983cd24fb0d6963f7d28e17f72");
     }
     #[test]
     fn short_string1() {
-        let hex = from_string("message digest".to_string());
+        let input = "message digest".as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
         assert!(hex == "f96b697d7cb7938d525a2f31aaf161d0");
     }
     #[test]
     fn short_string2() {
-        let hex = from_string("abcdefghijklmnopqrstuvwxyz".to_string());
+        let input = "abcdefghijklmnopqrstuvwxyz".as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
         assert!(hex == "c3fcd3d76192e4007dfb496cca67e13b");
     }
     #[test]
     fn long_string1() {
-        let hex = from_string(
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".to_string(),
-        );
+        let input = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
         assert!(hex == "d174ab98d277d9f5a5611c2c9f419d9f");
     }
     #[test]
     fn long_string2() {
-        let hex = from_string(
+        let input =
             "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                .to_string(),
-        );
+                .as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
         assert!(hex == "57edf4a22be3c955ac49da2e2107b67a");
+    }
+
+    #[test]
+    fn boundary_64_bytes() {
+        let input = "a".repeat(64);
+        let input = input.as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
+        assert!(hex == "014842d480b571495a4a0363793f7367");
+    }
+
+    #[test]
+    fn boundary_65_bytes() {
+        let input = "a".repeat(65);
+        let input = input.as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
+        assert!(hex == "c743a45e0d2e6a95cb859adae0248435");
+    }
+
+    #[test]
+    fn boundary_128_bytes() {
+        let input = "a".repeat(128);
+        let input = input.as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
+        assert!(hex == "e510683b3f5ffe4093d021808bc6ff70");
+    }
+
+    #[test]
+    fn boundary_129_bytes() {
+        let input = "a".repeat(129);
+        let input = input.as_bytes();
+        let mut status = Md5::new();
+        status.update(input);
+        status.finalize();
+        let hex = status.digest();
+        assert!(hex == "b325dc1c6f5e7a2b7cf465b9feab7948");
     }
 }

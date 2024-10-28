@@ -20,3 +20,5 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --all-targets --all-features -- -D warnings
       - run: cargo test
+      - run: wasm-pack test --headless --chrome
+      - run: wasm-pack test --headless --firefox
