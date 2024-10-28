@@ -1,4 +1,4 @@
-import {md5} from 'hash-wasm'
+import {md5} from 'super-fast-md5'
 
 onmessage = async (e) => {
     const t0 = performance.now();
