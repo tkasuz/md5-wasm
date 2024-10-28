@@ -18,5 +18,10 @@
     "md5": "^2.3.0",
     "md5gen-wasm": "^0.6.4",
     "super-fast-md5": "^1.0.3"
+  },
+  "overrides": {
+    "vite": {
+      "rollup": "npm:@rollup/wasm-node"
+    }
   }
 }
