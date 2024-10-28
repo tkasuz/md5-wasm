@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/tkasuz/md5-wasm/compare/v0.6.4...v0.7.0) (2024-10-28)
+
+
+### Features
+
+* Performance tuning ([#20](https://github.com/tkasuz/md5-wasm/issues/20)) ([208f5e1](https://github.com/tkasuz/md5-wasm/commit/208f5e174b2d9cbed42f8c35d9aa50da5599a9ae))
+
 ## [0.6.4](https://github.com/tkasuz/md5-wasm/compare/v0.6.3...v0.6.4) (2024-10-22)
 
 
