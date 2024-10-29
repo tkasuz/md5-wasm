@@ -1,6 +1,5 @@
 import {md5_from_file} from '../index';
 import { expect, test } from 'vitest';
-import {File} from '@web-std/file';
 
 test('empty', async () => {
     const file = new File([], 'test.txt');

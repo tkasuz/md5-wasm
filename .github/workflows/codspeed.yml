@@ -16,7 +16,9 @@ jobs:
       - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - run: wasm-pack build --target bundler --release
         working-directory: rust
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - run: npm install
       - run: npm run test
       - uses: CodSpeedHQ/action@v3

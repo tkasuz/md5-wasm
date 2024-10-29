@@ -1,6 +1,5 @@
 import {md5_from_file} from '../index';
 import { bench, describe } from 'vitest';
-import {File} from '@web-std/file';
 
 describe('bench', async () => {
     const one_kb = new File(["a".repeat(1000)], 'test.txt');

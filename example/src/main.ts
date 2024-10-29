@@ -1,8 +1,10 @@
-import Worker from './worker.js?worker'
-import HashWasmWorker from './hash_wasm_worker.js?worker'
-import Md5Worker from './md5.js?worker'
-import CryptoWorker from './crypto.js?worker'
-import SuperFastMd5Worker from './super_fast_md5.js?worker'
+import Md5GenWasmWorker from './workers/md5gen_wasm.js?worker'
+import HashWasmWorker from './workers/hash_wasm.js?worker'
+import Md5Worker from './workers/md5.js?worker'
+import CryptoWorker from './workers/crypto.js?worker'
+import SuperFastMd5Worker from './workers/super_fast_md5.js?worker'
+
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -51,52 +53,30 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `
 
 const file = document.getElementById('file');
-const worker = new Worker();
-const hashWasmWorker = new HashWasmWorker();
-const md5Worker = new Md5Worker();
-const cryptoWorker = new CryptoWorker();
-const superFastMd5Worker = new SuperFastMd5Worker();
 
-
-worker.onmessage = (e) => {
-  console.log(e.data);
-  document.getElementById('md5gen-wasm-latency')!.textContent = e.data[1];
-  document.getElementById('md5gen-wasm-throughput')!.textContent = e.data[2];
-};
-
-hashWasmWorker.onmessage = (e) => {
-  console.log(e.data);
-  document.getElementById('hash-wasm-latency')!.textContent = e.data[1];
-  document.getElementById('hash-wasm-throughput')!.textContent = e.data[2];
-};
-
-md5Worker.onmessage = (e) => {
-  console.log(e.data);
-  document.getElementById('md5-latency')!.textContent = e.data[1];
-  document.getElementById('md5-throughput')!.textContent = e.data[2];
-};
-
-cryptoWorker.onmessage = (e) => {
-  console.log(e.data);
-  document.getElementById('crypto-latency')!.textContent = e.data[1];
-  document.getElementById('crypto-throughput')!.textContent = e.data[2];
-};
-
-superFastMd5Worker.onmessage = (e) => {
-  console.log(e.data);
-  document.getElementById('super-fast-md5-latency')!.textContent = e.data[1];
-  document.getElementById('super-fast-md5-throughput')!.textContent = e.data[2];
-};
+async function runWorker(worker: Worker, name: string, file: File) {
+  await sleep(1000);
+  worker.postMessage(file);
+  return new Promise((resolve) => {
+    worker.onmessage = (event) => {
+      console.log(event.data);
+      document.getElementById(`${name}-latency`)!.textContent = event.data[1];
+      document.getElementById(`${name}-throughput`)!.textContent = event.data[2];
+      worker.terminate()
+      resolve(event.data);
+    };
+  });
+}
 
 if (file) {
   file.addEventListener('change', async (event) => {
     const target = event.target as HTMLInputElement;
     if (target && target.files) {
-      worker.postMessage(target.files[0]);
-      hashWasmWorker.postMessage(target.files[0]);
-      md5Worker.postMessage(target.files[0]);
-      cryptoWorker.postMessage(target.files[0]);
-      superFastMd5Worker.postMessage(target.files[0]);
+      await runWorker(new Md5GenWasmWorker(), "md5gen-wasm", target.files[0])
+      await runWorker(new HashWasmWorker(), "hash-wasm", target.files[0])
+      await runWorker(new Md5Worker(), "md5", target.files[0])
+      await runWorker(new CryptoWorker(), "crypto", target.files[0])
+      await runWorker(new SuperFastMd5Worker(), "super-fast-md5", target.files[0])
     }
   });
 };
