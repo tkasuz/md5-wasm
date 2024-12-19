@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "typescript": "^5.5.3",
-    "vite": "^6.0.3"
+    "vite": "^6.0.4"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
