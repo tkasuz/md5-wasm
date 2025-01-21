@@ -41,7 +41,7 @@
     "vite-plugin-dts": "^4.2.4",
     "vite-plugin-top-level-await": "^1.4.4",
     "vite-plugin-wasm": "^3.3.0",
-    "vitest": "^2.1.4",
+    "vitest": "^3.0.3",
     "webdriverio": "^9.2.1"
   }
 }
